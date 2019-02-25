@@ -107,9 +107,8 @@ const searchSummary = async (req, res) => {
 
 const getByEmail = async (req, res) => {
   const  id = req.params.id
-  const  date = req.params.date
   const  user = req.headers.authorization
-  const summary = await SummaryModel.find({ userEmail: id, createdAt: date })
+  const summary = await SummaryModel.find({ _id: id })
 
   res.json(200, { summary })
 }

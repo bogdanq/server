@@ -21,7 +21,7 @@ const SummarySchema = new Schema(
       trim: true,
     },
     tags: {
-      type: [String],
+      type: String,
       required: 'Tags is required',
       trim: true,
     },
@@ -36,14 +36,14 @@ const SummarySchema = new Schema(
         required: 'Company name is required',
         trim: true,
       },
-      date: [{
-        start: {
-          type: String,
-        },
-        end: {
-          type: String,
-        },
-      }],
+      startDate: {
+        type: String,
+        trim: true,
+      },
+      endDate: {
+        type: String,
+        trim: true,
+      },
       currentWork: {
         type: Boolean,
         default: false,

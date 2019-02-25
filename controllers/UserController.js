@@ -24,17 +24,17 @@ const signIn = async (req, res) => {
   const { email, password } = req.body
 
   if (!email || !password) {
-    res.json(400, { status: 'email and password required' })
+    res.send(404, { status: 'email и пароль не найдены' })
   }
 
   const user = await UserController.findOne({ email })
 
   if (!user) {
-    res.json(400, { status: 'email not found' })
+    res.send(404, { status: 'email не найден' })
   }
 
   if (!user.comparePasswords(password)) {
-    res.json(400, { status: 'Invalid password' })
+    res.json(404, { status: 'Неверный пароль' })
   }
 
   const token = Math.random(1, 100000)

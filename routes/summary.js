@@ -24,7 +24,7 @@ new Promise ((res, rej) => {
 
 router
   .get('/', SummaryController.searchSummary)
-  .get('/getByEmail/:id/:date', SummaryController.getByEmail)
+  .get('/getByEmail/:id', SummaryController.getByEmail)
   .post('/add', SummaryController.addSummary)
   .delete('/delete/:id', SummaryController.delSummary)
   .put('/update/:id', SummaryController.updateSummary)
