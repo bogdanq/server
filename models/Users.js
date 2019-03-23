@@ -29,6 +29,11 @@ const UsersSchema = new Schema(
             lowercase: true,
             required: 'lastName is required',
             trim: true
+        },
+        favoriteSummry: {
+          type: [String],
+          lowercase: true,
+          trim: true
         }
     },
     {
@@ -36,10 +41,10 @@ const UsersSchema = new Schema(
     }
 )
 
-UsersSchema.statics.createFields = ['email', 'password', 'firstName', 'lastName']
+UsersSchema.statics.createFields = ['email', 'password', 'firstName', 'lastName', 'favoriteSummry']
 
 UsersSchema.statics.findOneWithPublicFields = function(params, cb) {
-    return this.findOne(params, cb).select({ password: 0, _id: 0, __v: 0 })
+  return this.findOne(params, cb).select({ password: 0, _id: 0, __v: 0 })
 }  
 
 UsersSchema.methods.comparePasswords = function(password) {

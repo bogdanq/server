@@ -89,5 +89,29 @@ const getSummaries = async  (req, res) => {
   }
 }
 
-export default { signUp, signIn, deleteUser, getUsers, currentUser, getSummaries }
+const toggleSummary = async (req, res) => {
+  const { authorization } = req.headers
+  const { id } = req.body
+
+  const user = await UserController.findOne({ email: authorization })
+  if (!user) {
+    res.send(404, { status: 'email не найден' })
+  } else {
+    if (user.favoriteSummry.indexOf(id) === -1) {
+      const add = await UserController.updateOne({email: authorization}, {$push: {favoriteSummry: id}})
+      res.send(200, { status: 'добавил в избранное' })
+
+    } else {
+      const del = await  UserController.updateOne({email: authorization}, {$pull: {favoriteSummry: id}})
+      res.send(200, { status: 'удалил из избранного' })
+    }    
+  }  
+}
+
+const getSummary = async (req, res) => {
+  const summary = await SummaryController.find({ _id: { $in: req.body } })
+  res.send(200, { data: summary })
+}
+
+export default { signUp, signIn, deleteUser, getUsers, currentUser, getSummaries, toggleSummary, getSummary }
 

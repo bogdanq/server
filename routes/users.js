@@ -30,6 +30,7 @@ router
   .get('/current-user', helpers.privateUser, UserController.currentUser)
   // .get('/current-user/:id', UserController.currentUser)
   .get('/summaries', UserController.getSummaries)
-  // .get('/user-name', UserController.getUserByName)
+  .put('/favoriteSummary', UserController.toggleSummary)
+  .put('/getSummary', UserController.getSummary)
 
 export default router
