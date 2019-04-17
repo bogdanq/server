@@ -21,7 +21,7 @@ const SummarySchema = new Schema(
       trim: true,
     },
     tags: {
-      type: String,
+      type: [String],
       required: 'Tags is required',
       trim: true,
     },
@@ -58,7 +58,6 @@ const SummarySchema = new Schema(
     education: [{
       year: {
         type: String,
-        trim: true,
       },
       institution: {
         type: String,
@@ -75,14 +74,30 @@ const SummarySchema = new Schema(
         type: String,
         trim: true,
       }
-    }]
+    }],
+  comments: [{
+    userName: {
+      type: String,
+      trim: true,
+    },
+    userEmail: {
+      type: String,
+      trim: true,
+    },
+    description: {
+      type: String,
+      trim: true,
+    },
+  },  {
+    timestamps: true
+  }],
   },
   {
     timestamps: true
   }
 )
 
-SummarySchema.statics.createFields = ["title", "phone", "description", "history", "tags", "education", "language"]
+SummarySchema.statics.createFields = ["title", "phone", "description", "history", "tags", "education", "language", "comments"]
 
 const Summary = mongoose.model('Summary', SummarySchema)
 

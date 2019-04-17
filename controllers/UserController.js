@@ -110,6 +110,7 @@ const toggleSummary = async (req, res) => {
 
 const getSummary = async (req, res) => {
   const summary = await SummaryController.find({ _id: { $in: req.body } })
+  console.log(req.body)
   res.send(200, { data: summary })
 }
 

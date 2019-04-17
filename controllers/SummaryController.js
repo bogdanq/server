@@ -76,7 +76,7 @@ const updateSummary = async (req, res) => {
 }
 
 const searchSummary = async (req, res) => {
-  const MAX_SIZE = 10
+  const MAX_SIZE = 20
   const PAGE = 1
   const queryParams = pick(req.query, ['title', 'tags', 'size', 'page'])
 
@@ -108,9 +108,25 @@ const searchSummary = async (req, res) => {
 const getByEmail = async (req, res) => {
   const  id = req.params.id
   const  user = req.headers.authorization
-  const summary = await SummaryModel.find({ _id: id })
+  const summary = await SummaryModel.findOne({ _id: id })
 
   res.json(200, { summary })
 }
 
-export default  { addSummary, delSummary, updateSummary, searchSummary, getByEmail }
+const addComments = async (req, res) => {
+  const { authorization } = req.headers  
+  const add = await SummaryModel.updateOne({_id : authorization}, {$push: {comments:  req.body}})
+
+  res.send(200, {data: req.body})
+}
+
+const deleteComments = async (req, res) => {
+  const { authorization } = req.headers  
+  const {_id} = req.body
+  console.log(req.body)
+  console.log(authorization)
+  const add = await SummaryModel.updateOne({_id : authorization}, {$pull: {comments: {_id}}})
+  res.send(200, {data: _id})
+}
+
+export default  { addSummary, delSummary, updateSummary, searchSummary, getByEmail, addComments, deleteComments }

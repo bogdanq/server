@@ -28,5 +28,7 @@ router
   .post('/add', SummaryController.addSummary)
   .delete('/delete/:id', SummaryController.delSummary)
   .put('/update/:id', SummaryController.updateSummary)
+  .put('/addComments', SummaryController.addComments)
+  .put('/deleteComments', SummaryController.deleteComments)
 
 export default router
