@@ -1,132 +1,151 @@
-import SummaryModel from '../models/Summary'
-import pick from 'lodash/pick'
-import TokenController from '../models/Token'
-import helpers from './helpers'
+import SummaryModel from "../models/Summary";
+import pick from "lodash/pick";
+import TokenController from "../models/Token";
+import { search } from "./helpers";
 
 const addSummary = async (req, res) => {
-    const { authorization } = req.headers  
+  const { authorization } = req.headers;
 
-    if(authorization) {  
-        const token = await  TokenController.find({ token: authorization })
-        if(token) {
-            const { _id } = await SummaryModel.create({
-              ...pick(req.body, SummaryModel.createFields),
-              userEmail: token[0].userEmail
-            })
-        
-            const summary = await SummaryModel.findOne({ _id })
-        
-            res.json({ data: summary })     
-        } else {
-          res.send(404, { status: 'invalid token2' })
-        }
-        
+  if (authorization) {
+    const token = await TokenController.find({ token: authorization });
+    if (token) {
+      const { _id } = await SummaryModel.create({
+        ...pick(req.body, SummaryModel.createFields),
+        userEmail: token[0].userEmail,
+      });
+
+      const summary = await SummaryModel.findOne({ _id });
+
+      res.json({ data: summary });
     } else {
-      res.send(404, { status: 'invalid token' })
-    }
-}
-
-const delSummary = async (req, res) => {
-  const  _id = req.params.id
-  const  user = req.headers.authorization
-  const summary = await SummaryModel.findOne({ _id })
-  const token = await  TokenController.find({ token: user })
-
-  if(user) {
-    if(summary.userEmail !== token[0].userEmail || token[0].userEmail === undefined) {
-      res.send(403, { message: 'forbidden summary with id dont belong user with id' })
-    } else {
-        SummaryModel.remove({
-          _id: req.params.id
-        }).then(summary => {
-            if(summary) {
-              res.json(200, { id: _id })
-            } else {
-              res.send(400, { status: 'summary id is not defined' })
-            }
-        })
+      res.send(404, { status: "invalid token2" });
     }
   } else {
-    res.send(404, { status: 'user not found' })
+    res.send(404, { status: "invalid token" });
   }
-}
+};
+
+const delSummary = async (req, res) => {
+  const _id = req.params.id;
+  const user = req.headers.authorization;
+  const summary = await SummaryModel.findOne({ _id });
+  const token = await TokenController.find({ token: user });
+
+  if (user) {
+    if (
+      summary.userEmail !== token[0].userEmail ||
+      token[0].userEmail === undefined
+    ) {
+      res.send(403, {
+        message: "forbidden summary with id dont belong user with id",
+      });
+    } else {
+      SummaryModel.remove({
+        _id: req.params.id,
+      }).then(summary => {
+        if (summary) {
+          res.json(200, { id: _id });
+        } else {
+          res.send(400, { status: "summary id is not defined" });
+        }
+      });
+    }
+  } else {
+    res.send(404, { status: "user not found" });
+  }
+};
 
 const updateSummary = async (req, res) => {
-  const  _id = req.params.id
-  const  { authorization } = req.headers
+  const _id = req.params.id;
+  const { authorization } = req.headers;
 
-  const token = await  TokenController.find({ token: authorization })
-  const summary = await SummaryModel.findOne({ _id })
+  const token = await TokenController.find({ token: authorization });
+  const summary = await SummaryModel.findOne({ _id });
 
-  if(token.length < 1 ) {
-    res.send(404, { message: 'invalid token' })
+  if (token.length < 1) {
+    res.send(404, { message: "invalid token" });
   }
 
-  if(summary.userEmail !== token[0].userEmail) {
-    res.send(403, { message: 'forbidden summary with id dont belong user with id' })
+  if (summary.userEmail !== token[0].userEmail) {
+    res.send(403, {
+      message: "forbidden summary with id dont belong user with id",
+    });
   }
 
-  const newData = pick(req.body, SummaryModel.createFields)
+  const newData = pick(req.body, SummaryModel.createFields);
 
-  summary.set(newData)
+  summary.set(newData);
 
-  const updateSummary = await summary.save()
+  const updateSummary = await summary.save();
 
-  res.json({ data: updateSummary })
-}
+  res.json({ data: updateSummary });
+};
 
 const searchSummary = async (req, res) => {
-  const MAX_SIZE = 20
-  const PAGE = 1
-  const queryParams = pick(req.query, ['title', 'tags', 'size', 'page'])
+  const MAX_SIZE = 20;
+  const PAGE = 1;
+  const queryParams = pick(req.query, ["title", "tags", "size", "page"]);
 
   const filter = {
-    title: queryParams.title ? queryParams.title : '',
-    tags: queryParams.tags ? queryParams.tags.split(',') : [],
+    title: queryParams.title ? queryParams.title : "",
+    tags: queryParams.tags ? queryParams.tags.split(",") : [],
     size: parseInt(queryParams.size),
-    page: parseInt(queryParams.page)
+    page: parseInt(queryParams.page),
+  };
+
+  if (!filter.size || filter.size > MAX_SIZE) {
+    filter.size = MAX_SIZE;
   }
 
-  if(!filter.size || filter.size > MAX_SIZE) {
-    filter.size = MAX_SIZE
+  if (!filter.page) {
+    filter.page = PAGE;
   }
 
-  if(!filter.page) {
-    filter.page = PAGE
-  }
-
-  const { summaries, ...rest } = await helpers.search(filter)
+  const { summaries, ...rest } = await search(filter);
 
   res.json({
     data: summaries,
     filter,
-    ...rest
-  })
-}
-
+    ...rest,
+  });
+};
 
 const getByEmail = async (req, res) => {
-  const  id = req.params.id
-  const  user = req.headers.authorization
-  const summary = await SummaryModel.findOne({ _id: id })
+  const id = req.params.id;
+  const user = req.headers.authorization;
+  const summary = await SummaryModel.findOne({ _id: id });
 
-  res.json(200, { summary })
-}
+  res.json(200, { summary });
+};
 
 const addComments = async (req, res) => {
-  const { authorization } = req.headers  
-  const add = await SummaryModel.updateOne({_id : authorization}, {$push: {comments:  req.body}})
+  const { authorization } = req.headers;
+  const add = await SummaryModel.updateOne(
+    { _id: authorization },
+    { $push: { comments: req.body } },
+  );
 
-  res.send(200, {data: req.body})
-}
+  res.send(200, { data: req.body });
+};
 
 const deleteComments = async (req, res) => {
-  const { authorization } = req.headers  
-  const {_id} = req.body
-  console.log(req.body)
-  console.log(authorization)
-  const add = await SummaryModel.updateOne({_id : authorization}, {$pull: {comments: {_id}}})
-  res.send(200, {data: _id})
-}
+  const { authorization } = req.headers;
+  const { _id } = req.body;
+  console.log(req.body);
+  console.log(authorization);
+  const add = await SummaryModel.updateOne(
+    { _id: authorization },
+    { $pull: { comments: { _id } } },
+  );
+  res.send(200, { data: _id });
+};
 
-export default  { addSummary, delSummary, updateSummary, searchSummary, getByEmail, addComments, deleteComments }
+export default {
+  addSummary,
+  delSummary,
+  updateSummary,
+  searchSummary,
+  getByEmail,
+  addComments,
+  deleteComments,
+};

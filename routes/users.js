@@ -1,36 +1,41 @@
-import express from 'express'
-const router = express.Router()
+import express from "express";
+import mongoose from "mongoose";
+import {
+  getUsers,
+  signUp,
+  signIn,
+  deleteUser,
+  currentUser,
+  getSummaries,
+  toggleSummary,
+  getCurrentSummary,
+} from "../controllers/UserController";
 
-import mongoose from 'mongoose'
-
-import UserController from '../controllers/UserController'
-
-import { MONGO_URI } from '../hendels/checkUser'
-
-import helpers from '../controllers/helpers'
-
+import { MONGO_URI } from "../hendels/checkUser";
+import { privateUser, checkSummary } from "../controllers/helpers";
 
 new Promise((res, rej) => {
   mongoose
-    .connect(MONGO_URI,  { useNewUrlParser: true })
+    .connect(MONGO_URI, { useNewUrlParser: true })
     .then(mongodb => {
-      res(mongodb)
-      console.log('connected mongo users')
+      res(mongodb);
+      console.log("connected mongo users");
     })
     .catch(err => {
-      console.log('mongo not connect users')
-    })
-}) 
+      console.log("mongo not connect users");
+    });
+});
+
+const router = express.Router();
 
 router
-  .get('/', UserController.getUsers)
-  .post('/signup', UserController.signUp)
-  .post('/signin', UserController.signIn)
-  .delete('/delete/:id', UserController.deleteUser)
-  .get('/current-user', helpers.privateUser, UserController.currentUser)
-  // .get('/current-user/:id', UserController.currentUser)
-  .get('/summaries', UserController.getSummaries)
-  .put('/favoriteSummary', UserController.toggleSummary)
-  .put('/getSummary', UserController.getSummary)
+  .get("/", getUsers)
+  .post("/signup", signUp)
+  .post("/signin", signIn)
+  .delete("/delete/:id", deleteUser)
+  .get("/current-user", privateUser, currentUser)
+  .get("/summaries", privateUser, getSummaries)
+  .put("/favoriteSummary", privateUser, checkSummary, toggleSummary)
+  .get("/getCurrentSummary/:id", getCurrentSummary);
 
-export default router
+export default router;

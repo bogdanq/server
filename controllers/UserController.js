@@ -1,118 +1,136 @@
-import UserController from '../models/Users'
-import SummaryController from '../models/Summary'
-import TokenController from '../models/Token'
-import pick from 'lodash/pick'
+import UserController from "../models/Users";
+import SummaryController from "../models/Summary";
+import TokenController from "../models/Token";
+import pick from "lodash/pick";
 
-const getUsers = (ctx) => {
-  UserController.find().then((err, users) => {
-    if(err) {
-        ctx.res.send(err)
-    } else {
-        ctx.res.json(users)
-    }
-  }) 
-}
+const getUsers = async (_, response) => {
+  try {
+    const result = await UserController.find();
+    response.send(result);
+  } catch (e) {
+    response.send(404, { message: e });
+  }
+};
 
-const signUp = async (req, res) => {
-  const { _id } = await UserController.create(pick(req.body, UserController.createFields))
-  const user = await UserController.findOneWithPublicFields({ _id })
-  
-  res.json({ data: user })
-}
+const signUp = async (request, response) => {
+  try {
+    const user = await UserController.create(
+      pick(request.body, UserController.createFields),
+    );
+    response.send(200, { data: user });
+  } catch ({ message }) {
+    response.send(404, { message });
+  }
+};
 
-const signIn = async (req, res) => {
-  const { email, password } = req.body
+const signIn = async (request, response) => {
+  const { email, password } = request.body;
 
   if (!email || !password) {
-    res.send(404, { status: 'email и пароль не найдены' })
+    response.send(404, { message: "email и пароль не найдены" });
   }
 
-  const user = await UserController.findOne({ email })
+  const user = await UserController.findOne({ email });
 
   if (!user) {
-    res.send(404, { status: 'email не найден' })
+    response.send(404, { message: "email не найден" });
   }
 
   if (!user.comparePasswords(password)) {
-    res.json(404, { status: 'Неверный пароль' })
+    response.send(404, { message: "Неверный пароль" });
   }
 
-  const token = Math.random(1, 100000)
+  const token = Math.random(1, 100000);
 
-  const newUserToken = new TokenController ({
+  const newUserToken = new TokenController({
     userEmail: email,
-    token: token
-  })
+    token,
+  });
 
-  newUserToken.save().then(() => {
-    res.send({ 
-      data: user,
-      token: token
-    })
-  })  
-
-}
-
-const deleteUser = (req, res) => {
-  UserController.remove({
-    _id: req.params.id
-  }).then(user => {
-    if(user) {
-        res.json(200, { status: 'deleted' })
-    } else {
-        res.send(400, { status: 'error' })
-    }
-  })
-}
-
-const currentUser = async (req, res) => {
   try {
-    const user = await UserController.findOne({ email: req.userEmail })
-  
-    res.send(user)
-   } catch(e) {
-    console.log(e)
-   } 
-}   
-
-const getSummaries = async  (req, res) => {
-  const { authorization } = req.headers
-  const userEmail  = authorization
-
-  const user = await SummaryController.find({ userEmail })
-  
-  if(user !== null) {
-    res.json({ data: user })     
-      
-  } else {
-    res.send(404, { status: 'user not found' })
+    await newUserToken.save();
+    response.send(200, {
+      data: user,
+      token,
+    });
+  } catch (e) {
+    response.send(404, {
+      message: e,
+    });
   }
-}
+};
 
-const toggleSummary = async (req, res) => {
-  const { authorization } = req.headers
-  const { id } = req.body
+const deleteUser = async (request, response) => {
+  try {
+    await UserController.remove({
+      _id: request.params.id,
+    });
+    response.send(200, { message: "deleted" });
+  } catch (e) {
+    response.send(404, { message: "id пользователя не найден" });
+  }
+};
 
-  const user = await UserController.findOne({ email: authorization })
-  if (!user) {
-    res.send(404, { status: 'email не найден' })
-  } else {
+const currentUser = async (request, response) => {
+  try {
+    const user = await UserController.findOne({ email: request.userEmail });
+    response.send(200, { message: user });
+  } catch (e) {
+    response.send(404, { message: "Неправильный токен" });
+  }
+};
+
+const getSummaries = async (request, response) => {
+  try {
+    const user = await SummaryController.find({ userEmail: request.userEmail });
+    response.send(200, { data: user });
+  } catch (e) {
+    response.send(404, { message: "пользователь не найден" });
+  }
+};
+
+const updateFavoriteSummary = async (id, { userEmail }, methood) =>
+  await UserController.updateOne(
+    { email: userEmail },
+    { [methood]: { favoriteSummry: id } },
+  );
+
+const toggleSummary = async (request, response) => {
+  const id = request.id;
+  if (!id) response.send(404, { message: "id обязательный параметр" });
+
+  try {
+    const user = await UserController.findOne({ email: request.userEmail });
     if (user.favoriteSummry.indexOf(id) === -1) {
-      const add = await UserController.updateOne({email: authorization}, {$push: {favoriteSummry: id}})
-      res.send(200, { status: 'добавил в избранное' })
-
+      updateFavoriteSummary(id, request, "$push");
+      response.send(200, { message: "добавил в избранное" });
     } else {
-      const del = await  UserController.updateOne({email: authorization}, {$pull: {favoriteSummry: id}})
-      res.send(200, { status: 'удалил из избранного' })
-    }    
-  }  
-}
+      updateFavoriteSummary(id, request, "$pull");
+      response.send(200, { message: "удалил из избранного" });
+    }
+  } catch (e) {
+    response.send(404, { message: "email не найден" });
+  }
+};
 
-const getSummary = async (req, res) => {
-  const summary = await SummaryController.find({ _id: { $in: req.body } })
-  console.log(req.body)
-  res.send(200, { data: summary })
-}
+const getCurrentSummary = async (request, response) => {
+  try {
+    const summary = await SummaryController.findOne({
+      _id: request.params.id,
+    });
+    response.send(200, { data: summary });
+  } catch (e) {
+    response.send(404, { message: "Резюме не найдено" });
+  }
+};
 
-export default { signUp, signIn, deleteUser, getUsers, currentUser, getSummaries, toggleSummary, getSummary }
-
+export {
+  signUp,
+  signIn,
+  deleteUser,
+  getUsers,
+  currentUser,
+  getSummaries,
+  toggleSummary,
+  getCurrentSummary,
+};
