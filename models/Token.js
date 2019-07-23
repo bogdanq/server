@@ -1,15 +1,13 @@
-import mongoose, { Schema } from 'mongoose'
+import mongoose, { Schema } from "mongoose";
 
 const TokenSchema = new Schema(
-    {
-        userEmail: String,
-        token: String
-    },
-    {
-        timestamps: true
-    }
-)
+  {
+    userEmail: String,
+    token: String,
+  },
+  {
+    timestamps: true,
+  },
+);
 
-const Token = mongoose.model('Token', TokenSchema)
-
-export default Token
+export const TokenModel = mongoose.model("Token", TokenSchema);

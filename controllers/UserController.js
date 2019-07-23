@@ -1,21 +1,19 @@
-import UserController from "../models/Users";
-import SummaryController from "../models/Summary";
-import TokenController from "../models/Token";
+import { SummaryModel, TokenModel, UsersModel } from "../models";
 import pick from "lodash/pick";
 
 const getUsers = async (_, response) => {
   try {
-    const result = await UserController.find();
-    response.send(result);
+    const result = await UsersModel.find();
+    response.send(200, { data: result });
   } catch (e) {
-    response.send(404, { message: e });
+    response.send(404, { message: "Ошибка запроса" });
   }
 };
 
 const signUp = async (request, response) => {
   try {
-    const user = await UserController.create(
-      pick(request.body, UserController.createFields),
+    const user = await UsersModel.create(
+      pick(request.body, UsersModel.createFields),
     );
     response.send(200, { data: user });
   } catch ({ message }) {
@@ -27,13 +25,13 @@ const signIn = async (request, response) => {
   const { email, password } = request.body;
 
   if (!email || !password) {
-    response.send(404, { message: "email и пароль не найдены" });
+    response.send(404, { message: "Неверный логин и пароль" });
   }
 
-  const user = await UserController.findOne({ email });
+  const user = await UsersModel.findOne({ email });
 
   if (!user) {
-    response.send(404, { message: "email не найден" });
+    response.send(404, { message: "Неверный логин" });
   }
 
   if (!user.comparePasswords(password)) {
@@ -42,7 +40,7 @@ const signIn = async (request, response) => {
 
   const token = Math.random(1, 100000);
 
-  const newUserToken = new TokenController({
+  const newUserToken = new TokenModel({
     userEmail: email,
     token,
   });
@@ -62,35 +60,41 @@ const signIn = async (request, response) => {
 
 const deleteUser = async (request, response) => {
   try {
-    await UserController.remove({
+    await UsersModel.remove({
       _id: request.params.id,
     });
-    response.send(200, { message: "deleted" });
+    response.send(200, { message: "Пользователь удален" });
   } catch (e) {
-    response.send(404, { message: "id пользователя не найден" });
+    response.send(404, { message: "Пользователь не найден" });
   }
 };
 
 const currentUser = async (request, response) => {
   try {
-    const user = await UserController.findOne({ email: request.userEmail });
-    response.send(200, { message: user });
+    const user = await UsersModel.findOne({ email: request.userEmail });
+    response.send(200, { data: user });
   } catch (e) {
-    response.send(404, { message: "Неправильный токен" });
+    response.send(404, { message: "Неверный токен" });
   }
 };
 
 const getSummaries = async (request, response) => {
+  const userEmail = request.userEmail;
+  if (!userEmail)
+    response.send(404, { message: "userEmail обязательный параметр" });
+
   try {
-    const user = await SummaryController.find({ userEmail: request.userEmail });
+    const user = await SummaryModel.find({
+      userEmail,
+    });
     response.send(200, { data: user });
   } catch (e) {
-    response.send(404, { message: "пользователь не найден" });
+    response.send(404, { message: "Пользователь не найден" });
   }
 };
 
 const updateFavoriteSummary = async (id, { userEmail }, methood) =>
-  await UserController.updateOne(
+  await UsersModel.updateOne(
     { email: userEmail },
     { [methood]: { favoriteSummry: id } },
   );
@@ -100,22 +104,22 @@ const toggleSummary = async (request, response) => {
   if (!id) response.send(404, { message: "id обязательный параметр" });
 
   try {
-    const user = await UserController.findOne({ email: request.userEmail });
+    const user = await UsersModel.findOne({ email: request.userEmail });
     if (user.favoriteSummry.indexOf(id) === -1) {
       updateFavoriteSummary(id, request, "$push");
-      response.send(200, { message: "добавил в избранное" });
+      response.send(200, { message: "Добавил в избранное" });
     } else {
       updateFavoriteSummary(id, request, "$pull");
-      response.send(200, { message: "удалил из избранного" });
+      response.send(200, { message: "Удалил из избранного" });
     }
   } catch (e) {
-    response.send(404, { message: "email не найден" });
+    response.send(404, { message: "Неверный пользователь" });
   }
 };
 
 const getCurrentSummary = async (request, response) => {
   try {
-    const summary = await SummaryController.findOne({
+    const summary = await SummaryModel.findOne({
       _id: request.params.id,
     });
     response.send(200, { data: summary });

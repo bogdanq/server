@@ -1,57 +1,27 @@
-import SummaryModel from "../models/Summary";
 import pick from "lodash/pick";
-import TokenController from "../models/Token";
-import { search } from "./helpers";
+import { SummaryModel, TokenModel } from "../models";
+import { search } from "../helpers/search";
 
-const addSummary = async (req, res) => {
-  const { authorization } = req.headers;
-
-  if (authorization) {
-    const token = await TokenController.find({ token: authorization });
-    if (token) {
-      const { _id } = await SummaryModel.create({
-        ...pick(req.body, SummaryModel.createFields),
-        userEmail: token[0].userEmail,
-      });
-
-      const summary = await SummaryModel.findOne({ _id });
-
-      res.json({ data: summary });
-    } else {
-      res.send(404, { status: "invalid token2" });
-    }
-  } else {
-    res.send(404, { status: "invalid token" });
+const addSummary = async (request, response) => {
+  try {
+    const newSummary = await SummaryModel.create({
+      ...pick(request.body, SummaryModel.createFields),
+      userEmail: request.userEmail,
+    });
+    response.send(200, { data: newSummary });
+  } catch (e) {
+    response.send(404, { message: "При добавлении резюме произошла ошибка" });
   }
 };
 
-const delSummary = async (req, res) => {
-  const _id = req.params.id;
-  const user = req.headers.authorization;
-  const summary = await SummaryModel.findOne({ _id });
-  const token = await TokenController.find({ token: user });
-
-  if (user) {
-    if (
-      summary.userEmail !== token[0].userEmail ||
-      token[0].userEmail === undefined
-    ) {
-      res.send(403, {
-        message: "forbidden summary with id dont belong user with id",
-      });
-    } else {
-      SummaryModel.remove({
-        _id: req.params.id,
-      }).then(summary => {
-        if (summary) {
-          res.json(200, { id: _id });
-        } else {
-          res.send(400, { status: "summary id is not defined" });
-        }
-      });
-    }
-  } else {
-    res.send(404, { status: "user not found" });
+const delSummary = async (request, response) => {
+  try {
+    const summary = await SummaryModel.remove({
+      _id: request.id,
+    });
+    response.json(200, { data: summary });
+  } catch (e) {
+    response.send(404, { status: "Произошла ошибка при удалении резюме" });
   }
 };
 
@@ -59,7 +29,7 @@ const updateSummary = async (req, res) => {
   const _id = req.params.id;
   const { authorization } = req.headers;
 
-  const token = await TokenController.find({ token: authorization });
+  const token = await TokenModel.find({ token: authorization });
   const summary = await SummaryModel.findOne({ _id });
 
   if (token.length < 1) {
@@ -67,9 +37,7 @@ const updateSummary = async (req, res) => {
   }
 
   if (summary.userEmail !== token[0].userEmail) {
-    res.send(403, {
-      message: "forbidden summary with id dont belong user with id",
-    });
+    res.send(404, { message: "Ошибка при обновлении резюме" });
   }
 
   const newData = pick(req.body, SummaryModel.createFields);
@@ -110,37 +78,42 @@ const searchSummary = async (req, res) => {
   });
 };
 
-const getByEmail = async (req, res) => {
-  const id = req.params.id;
-  const user = req.headers.authorization;
-  const summary = await SummaryModel.findOne({ _id: id });
-
-  res.json(200, { summary });
+const getByEmail = async (request, response) => {
+  try {
+    const favoriteSummary = await SummaryModel.find({
+      userEmail: request.params.id,
+    });
+    response.send(200, { data: favoriteSummary });
+  } catch (e) {
+    response.send(404, { message: "Произошла ошибка запроса" });
+  }
 };
 
-const addComments = async (req, res) => {
-  const { authorization } = req.headers;
-  const add = await SummaryModel.updateOne(
-    { _id: authorization },
-    { $push: { comments: req.body } },
-  );
-
-  res.send(200, { data: req.body });
+const addComments = async (request, response) => {
+  try {
+    await SummaryModel.updateOne(
+      { _id: request.params.id },
+      { $push: { comments: request.body } },
+    );
+    response.send(200, { data: request.body });
+  } catch (e) {
+    response.send(404, { message: "При запросе произошла ошибка" });
+  }
 };
 
-const deleteComments = async (req, res) => {
-  const { authorization } = req.headers;
-  const { _id } = req.body;
-  console.log(req.body);
-  console.log(authorization);
-  const add = await SummaryModel.updateOne(
-    { _id: authorization },
-    { $pull: { comments: { _id } } },
-  );
-  res.send(200, { data: _id });
+const deleteComments = async (request, response) => {
+  try {
+    await SummaryModel.updateOne(
+      { _id: request.params.id },
+      { $pull: { comments: { _id: request.id } } },
+    );
+    response.send(200, { message: "Коментарий удален" });
+  } catch (e) {
+    response.send(404, { message: "При запросе произошла ошибка" });
+  }
 };
 
-export default {
+export {
   addSummary,
   delSummary,
   updateSummary,

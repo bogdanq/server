@@ -1,30 +1,16 @@
-import express from 'express'
+import express from "express";
+import {
+  getToken,
+  delToken,
+  getTokenById,
+} from "../controllers/TokenController";
+import { privateUser } from "../helpers/token-middleware";
 
-const router = express.Router()
-
-import mongoose from 'mongoose'
-
-mongoose.Promise = Promise
-
-import TokenController from '../controllers/TokenController'
-
-import { MONGO_URI } from '../hendels/checkUser'
-
-new Promise ((res, rej) => {
-  mongoose
-    .connect(MONGO_URI,  { useNewUrlParser: true }) 
-    .then(mongodb => {
-      res(mongodb)
-        
-    })
-    .catch(err => {
-      console.log('mongo error token')
-    })
-})
+const router = express.Router();
 
 router
-  .get('/', TokenController.getToken)
-  .delete('/delete/:id', TokenController.delToken)
-  .get('/userToken', TokenController.getTokenById)
-    
-export default router
+  .get("/", getToken)
+  .delete("/delete/:id", delToken)
+  .get("/userToken", privateUser, getTokenById);
+
+export const token = router;

@@ -1,38 +1,32 @@
-import TokenController from '../models/Token'
+import { TokenModel } from "../models";
 
-const getToken = (ctx) => {
-    TokenController.find().then((err, users) => {
-        if(err) {
-            ctx.res.send(err)
-        } else {
-            ctx.res.json(users)
-        }
-    }) 
-}
+const getToken = async (_, response) => {
+  try {
+    const tokens = await TokenModel.find();
+    response.send(200, { data: tokens });
+  } catch (e) {
+    response.send(404, { message: "Ошибка при выполнении запроса" });
+  }
+};
 
-const delToken = (req, res) => {
-    TokenController.remove({
-        _id: req.params.id
-    }).then((token) => {
-        if(token) {
-            res.json(200,{ message: 'deleted token' })
-        } else {
-            res.json(404,{ message: 'invalid token' })
-        }
-    }) 
-}
+const delToken = (request, response) => {
+  try {
+    TokenModel.remove({
+      _id: request.params.id,
+    });
+    response.send(200, { message: "Токен удален" });
+  } catch (e) {
+    response.send(404, { message: "Ошибка при удалении токена" });
+  }
+};
 
-const getTokenById = (req, res) => {
-    const { authorization } = req.headers
-    const token  = authorization
+const getTokenById = async (request, response) => {
+  try {
+    const currentToken = await TokenModel.find({ token: request.token });
+    response.send(200, { data: currentToken });
+  } catch (e) {
+    response.send(404, { message: "Ошибка при получении токена" });
+  }
+};
 
-    TokenController.find({ token }).then((err, userToken) => {
-        if(!userToken) {
-            res.send(err)
-        } else {
-            res.json(users)
-        }
-    }) 
-}
-
-export default { getToken, delToken, getTokenById }
+export { getToken, delToken, getTokenById };
