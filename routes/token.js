@@ -4,13 +4,13 @@ import {
   delToken,
   getTokenById,
 } from "../controllers/TokenController";
-import { privateUser } from "../helpers/token-middleware";
+import { privateUser } from "../middleware/token-middleware";
 
 const router = express.Router();
 
 router
-  .get("/", getToken)
-  .delete("/delete/:id", delToken)
+  .get("/", privateUser, getToken)
+  .delete("/delete/:id", privateUser, delToken)
   .get("/userToken", privateUser, getTokenById);
 
 export const token = router;

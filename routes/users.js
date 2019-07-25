@@ -9,8 +9,8 @@ import {
   toggleSummary,
   getCurrentSummary,
 } from "../controllers/UserController";
-import { checkSummary } from "../helpers/summary-middleware";
-import { privateUser } from "../helpers/token-middleware";
+import { checkSummary } from "../middleware/summary-middleware";
+import { privateUser } from "../middleware/token-middleware";
 
 const router = express.Router();
 
@@ -18,7 +18,7 @@ router
   .get("/", getUsers)
   .post("/signup", signUp)
   .post("/signin", signIn)
-  .delete("/delete/:id", deleteUser)
+  .delete("/delete/:id", privateUser, deleteUser)
   .get("/current-user", privateUser, currentUser)
   .get("/summaries", privateUser, getSummaries)
   .put("/favoriteSummary", privateUser, checkSummary, toggleSummary)

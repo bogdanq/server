@@ -8,11 +8,11 @@ import {
   addComments,
   deleteComments,
 } from "../controllers/SummaryController";
-import { privateUser } from "../helpers/token-middleware";
+import { privateUser } from "../middleware/token-middleware";
 import {
   checkSummaryComments,
   checkSummaryByParams,
-} from "../helpers/summary-middleware";
+} from "../middleware/summary-middleware";
 
 const router = express.Router();
 
