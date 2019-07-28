@@ -113,6 +113,17 @@ const deleteComments = async (request, response) => {
   }
 };
 
+const getCurrentSummary = async (request, response) => {
+  try {
+    const summary = await SummaryModel.findOne({
+      _id: request.id,
+    });
+    response.json(200, { data: summary });
+  } catch (e) {
+    response.send(404, { status: "Произошла ошибка при получении резюме" });
+  }
+};
+
 export {
   addSummary,
   delSummary,
@@ -121,4 +132,5 @@ export {
   getByEmail,
   addComments,
   deleteComments,
+  getCurrentSummary,
 };

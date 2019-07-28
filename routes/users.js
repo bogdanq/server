@@ -7,7 +7,6 @@ import {
   currentUser,
   getSummaries,
   toggleSummary,
-  getCurrentSummary,
 } from "../controllers/UserController";
 import { checkSummary } from "../middleware/summary-middleware";
 import { privateUser } from "../middleware/token-middleware";
@@ -21,7 +20,6 @@ router
   .delete("/delete/:id", privateUser, deleteUser)
   .get("/current-user", privateUser, currentUser)
   .get("/summaries", privateUser, getSummaries)
-  .put("/favoriteSummary", privateUser, checkSummary, toggleSummary)
-  .get("/getCurrentSummary/:id", getCurrentSummary);
+  .put("/favoriteSummary", privateUser, checkSummary, toggleSummary);
 
 export const users = router;

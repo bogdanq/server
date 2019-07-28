@@ -136,5 +136,4 @@ export {
   currentUser,
   getSummaries,
   toggleSummary,
-  getCurrentSummary,
 };

@@ -7,6 +7,7 @@ import {
   updateSummary,
   addComments,
   deleteComments,
+  getCurrentSummary,
 } from "../controllers/SummaryController";
 import { privateUser } from "../middleware/token-middleware";
 import {
@@ -19,6 +20,7 @@ const router = express.Router();
 router
   .get("/", searchSummary)
   .get("/getByEmail/:id", privateUser, getByEmail)
+  .get("/getCurrentSummary/:id", checkSummaryByParams, getCurrentSummary)
   .post("/add", privateUser, addSummary)
   .delete("/delete/:id", privateUser, checkSummaryByParams, delSummary)
   .put("/update/:id", privateUser, updateSummary)
