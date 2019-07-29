@@ -7,8 +7,9 @@ import {
   currentUser,
   getSummaries,
   toggleSummary,
+  toggleJobs,
 } from "../controllers/UserController";
-import { checkSummary } from "../middleware/summary-middleware";
+import { checkSummary, checkJobs } from "../middleware/summary-middleware";
 import { privateUser } from "../middleware/token-middleware";
 
 const router = express.Router();
@@ -20,6 +21,7 @@ router
   .delete("/delete/:id", privateUser, deleteUser)
   .get("/current-user", privateUser, currentUser)
   .get("/summaries", privateUser, getSummaries)
+  .put("/favoriteJobs", privateUser, checkJobs, toggleJobs)
   .put("/favoriteSummary", privateUser, checkSummary, toggleSummary);
 
 export const users = router;

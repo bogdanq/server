@@ -68,6 +68,30 @@ const updateJobs = async (req, res) => {
   }
 };
 
+const addComments = async (request, response) => {
+  try {
+    await JobsModel.updateOne(
+      { _id: request.params.id },
+      { $push: { comments: request.body } },
+    );
+    response.send(200, { data: request.body });
+  } catch (e) {
+    response.send(404, { message: "При запросе произошла ошибка" });
+  }
+};
+
+const deleteComments = async (request, response) => {
+  try {
+    await JobsModel.updateOne(
+      { _id: request.params.id },
+      { $pull: { comments: { _id: request.id } } },
+    );
+    response.send(200, { message: "Коментарий удален" });
+  } catch (e) {
+    response.send(404, { message: "При запросе произошла ошибка" });
+  }
+};
+
 export {
   addJobs,
   getJobs,
@@ -75,4 +99,6 @@ export {
   removeJobs,
   getCurrentJobs,
   updateJobs,
+  addComments,
+  deleteComments,
 };

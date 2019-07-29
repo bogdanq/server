@@ -1,4 +1,4 @@
-import { SummaryModel } from "../models";
+import { SummaryModel, JobsModel } from "../models";
 
 export const checkSummary = async (req, res, next) => {
   try {
@@ -7,6 +7,16 @@ export const checkSummary = async (req, res, next) => {
     return next();
   } catch (e) {
     res.send(404, { message: "Резюме не найдено" });
+  }
+};
+
+export const checkJobs = async (req, res, next) => {
+  try {
+    const summary = await JobsModel.findOne({ _id: req.body.id });
+    req.id = summary.id;
+    return next();
+  } catch (e) {
+    res.send(404, { message: "Вакансия не найдено" });
   }
 };
 

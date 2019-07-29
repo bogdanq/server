@@ -8,6 +8,8 @@ import {
   removeJobs,
   getCurrentJobs,
   updateJobs,
+  deleteComments,
+  addComments,
 } from "../controllers/JobsController";
 
 const router = express.Router();
@@ -18,6 +20,8 @@ router
   .get("/getCurrentJobs/:id", checkJobsByParams, getCurrentJobs)
   .post("/addJobs", privateUser, addJobs)
   .put("/updateJobs/:id", privateUser, checkJobsByParams, updateJobs)
+  .put("/addComments/:id", privateUser, checkJobsByParams, addComments)
+  .put("/deleteComments/:id", privateUser, checkJobsByParams, deleteComments)
   .delete("/removeJobs/:id", privateUser, checkJobsByParams, removeJobs);
 
 export const jobs = router;
