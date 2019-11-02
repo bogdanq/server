@@ -20,7 +20,7 @@
     "http-errors": "~1.6.2",
     "jsonwebtoken": "^8.4.0",
     "lodash": "^4.17.11",
-    "mongoose": "^5.4.3",
+    "mongoose": "^5.7.5",
     "mongoose-unique-validator": "^2.0.2",
     "morgan": "^1.9.1",
     "nodemon": "^1.18.9",
